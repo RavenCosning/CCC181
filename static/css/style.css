@@ -1,0 +1,11 @@
+/* TrimLine styles. Bootstrap handles most of the look. */
+:root {
+  --navy: #16223A;
+  --paper: #F6F4EE;
+}
+
+body { background: var(--paper); }
+
+/* Phone-friendly tap targets (accessibility checklist, Part 9) */
+.btn { min-height: 44px; }
+.btn-sm { min-height: 40px; padding-inline: 0.9rem; }
