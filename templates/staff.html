@@ -61,18 +61,20 @@
             {{ t.status|capitalize }}
           </span>
         </td>
-        <td class="text-nowrap">
-          {% if t.status == 'waiting' %}
-          <form method="post" action="{{ url_for('staff_action', ticket_id=t.number, action='call') }}" class="d-inline">
-            <button class="btn btn-sm btn-primary" aria-label="Call ticket {{ t.number }}">Call</button>
-          </form>
-          {% endif %}
-          <form method="post" action="{{ url_for('staff_action', ticket_id=t.number, action='serve') }}" class="d-inline">
-            <button class="btn btn-sm btn-success" aria-label="Mark ticket {{ t.number }} as served">Serve</button>
-          </form>
-          <form method="post" action="{{ url_for('staff_action', ticket_id=t.number, action='no-show') }}" class="d-inline">
-            <button class="btn btn-sm btn-outline-danger" aria-label="Mark ticket {{ t.number }} as no-show">No-show</button>
-          </form>
+        <td>
+          <div class="d-flex flex-column flex-md-row gap-1">
+            {% if t.status == 'waiting' %}
+            <form method="post" action="{{ url_for('staff_action', ticket_id=t.number, action='call') }}">
+              <button class="btn btn-sm btn-primary w-100" aria-label="Call ticket {{ t.number }}">Call</button>
+            </form>
+            {% endif %}
+            <form method="post" action="{{ url_for('staff_action', ticket_id=t.number, action='serve') }}">
+              <button class="btn btn-sm btn-success w-100" aria-label="Mark ticket {{ t.number }} as served">Serve</button>
+            </form>
+            <form method="post" action="{{ url_for('staff_action', ticket_id=t.number, action='no-show') }}">
+              <button class="btn btn-sm btn-outline-danger w-100 text-nowrap" aria-label="Mark ticket {{ t.number }} as no-show">No-show</button>
+            </form>
+          </div>
         </td>
       </tr>
       {% endfor %}
