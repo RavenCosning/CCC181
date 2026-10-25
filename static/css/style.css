@@ -39,3 +39,25 @@ body {
 .display-1 {
   color: #C93A2B;
 }
+
+.navbar a:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+main a:focus-visible,
+main button:focus-visible,
+main select:focus-visible,
+main input:focus-visible {
+  outline: 3px solid #212529;
+  outline-offset: 2px;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: #004a80;
+  --bs-btn-border-color: #004a80;
+  --bs-btn-hover-bg: #004a80;
+  --bs-btn-hover-border-color: #004a80;
+  --bs-btn-active-bg: #004a80;
+  --bs-btn-active-border-color: #004a80;
+}
