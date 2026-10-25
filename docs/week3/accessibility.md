@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | Join | 100 | ![Join](screenshots/lighthouse-join.jpg) |
 | My place | 100 | ![My place](screenshots/lighthouse-my-place.jpg) |
-| Staff | 100 | ![Staff](screenshots/lighthouse-staff.pngg) |
+| Staff | 100 | ![Staff](screenshots/lighthouse-staff.png) |
 
 All three screens are above the 90 target.
 
