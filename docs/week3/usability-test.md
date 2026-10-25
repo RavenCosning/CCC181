@@ -13,11 +13,10 @@
 **Final comment from the tester:** "A good solution for an inconvenience."
 
 **Persona rules that held up:**
-- The ticket number and position are the biggest things on My place, and the tester found both in about 10 seconds. This matches Migo's rule that he checks his phone quickly.
-- [FILL IN: paste one "Because..., my interface must..." line from Migo in personas.md]
+- Migo's rule: "Because he said the worst part is not knowing his turn, his number and 'people ahead' must be the biggest thing on My place (FR-02)." The tester found both in about 10 seconds.
 
 **Persona rules that did not hold up:**
-- The staff screen did not say what order to press Call, Serve and No-show in. The tester had to ask. Mang Rey's rule is that his actions must be quick and obvious at a busy counter, and an unclear order slows him down.
+- The staff screen did not say what order to press Call, Serve and No-show in, and the tester had to ask. This weakens Mang Rey's rule that the screen must work at a glance (FR-05), because a new barber has to stop and think.
 
 ## Most serious problem
 
