@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # ClinicQ: Hello, Flask
 
 Starter Flask app for **CCC181 Week 2: Git, GitHub & Flask Foundations**.
@@ -133,7 +132,7 @@ git push origin main     # when you have commits to share
 - One logical change per commit
 - Commit early and often
 - Good: "Add join-queue form". Unhelpful: "update", "asdf", "final na talaga".
-=======
+
 # Git Exercises
 
 **Course:** CCC181  
@@ -209,4 +208,3 @@ activities/git-exercises/
 ## Declaration
 
 I confirm that the screenshots in this folder show my own completion or progress for the required Git Exercises activity.
->>>>>>> origin/main
