@@ -1,0 +1,63 @@
+/* TrimLine styles. Bootstrap handles most of the look. */
+:root {
+  --navy: #16223A;
+  --paper: #F6F4EE;
+}
+
+body { background: var(--paper); }
+
+/* Phone-friendly tap targets (accessibility checklist, Part 9) */
+.btn { min-height: 44px; }
+.btn-sm { min-height: 40px; padding-inline: 0.9rem; }
+
+:root {
+  --bs-primary: #0070B8;
+  --bs-primary-rgb: 0, 112, 184;
+  --bs-link-color: #0070B8;
+}
+
+body {
+  background-color: #FBF3EF;
+}
+
+.navbar {
+  border-bottom: 6px solid transparent;
+  border-image: repeating-linear-gradient(
+    45deg, #C93A2B 0 12px, #FBF3EF 12px 24px, #0070B8 24px 36px, #FBF3EF 36px 48px
+  ) 1;
+}
+
+.btn-primary {
+  --bs-btn-bg: #0070B8;
+  --bs-btn-border-color: #0070B8;
+  --bs-btn-hover-bg: #005A94;
+  --bs-btn-hover-border-color: #005A94;
+  --bs-btn-active-bg: #004B7D;
+  --bs-btn-active-border-color: #004B7D;
+}
+
+.display-1 {
+  color: #C93A2B;
+}
+
+.navbar a:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+main a:focus-visible,
+main button:focus-visible,
+main select:focus-visible,
+main input:focus-visible {
+  outline: 3px solid #212529;
+  outline-offset: 2px;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: #004a80;
+  --bs-btn-border-color: #004a80;
+  --bs-btn-hover-bg: #004a80;
+  --bs-btn-hover-border-color: #004a80;
+  --bs-btn-active-bg: #004a80;
+  --bs-btn-active-border-color: #004a80;
+}

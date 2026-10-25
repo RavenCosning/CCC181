@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}My place · TrimLine{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-6">
+    <div class="card text-center shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h6 text-body-secondary mb-0 fw-normal">Your ticket</h1>
+        <p class="display-1 fw-bold mb-2">#{{ ticket.number }}</p>
+        <p class="fs-5 mb-3">{{ service.name }} · {{ ticket.name }}</p>
+
+        <div id="live-status" aria-live="polite">
+          <p class="mb-2">
+            <span id="status-badge" class="badge fs-6
+              {% if ticket.status == 'waiting' %}text-bg-warning
+              {% elif ticket.status == 'called' %}text-bg-success
+              {% elif ticket.status == 'served' %}text-bg-secondary
+              {% else %}text-bg-danger{% endif %}">{{ ticket.status|capitalize }}</span>
+          </p>
+          <p id="ahead-text" class="fs-4 mb-0">
+            {% if ticket.status == 'waiting' %}
+              {% if ahead == 0 %}You're next!
+              {% elif ahead == 1 %}1 person ahead of you
+              {% else %}{{ ahead }} people ahead of you{% endif %}
+            {% elif ticket.status == 'called' %}It's your turn. Please go to the chair.
+            {% elif ticket.status == 'served' %}All done. Thanks for visiting!
+            {% else %}You are no longer in the queue.{% endif %}
+          </p>
+        </div>
+
+        {% if ticket.status in ('waiting', 'called') %}
+        <form method="post" action="{{ url_for('leave', ticket_id=ticket.number) }}" class="mt-4">
+          <button type="submit" class="btn btn-outline-danger">Leave the queue</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const statusUrl = "{{ url_for('ticket_status', ticket_id=ticket.number) }}";
+  const badgeClasses = {
+    "waiting": "text-bg-warning",
+    "called": "text-bg-success",
+    "served": "text-bg-secondary",
+    "no-show": "text-bg-danger"
+  };
+
+  function aheadMessage(data) {
+    if (data.status === "waiting") {
+      if (data.ahead === 0) return "You're next!";
+      if (data.ahead === 1) return "1 person ahead of you";
+      return data.ahead + " people ahead of you";
+    }
+    if (data.status === "called") return "It's your turn. Please go to the chair.";
+    if (data.status === "served") return "All done. Thanks for visiting!";
+    return "You are no longer in the queue.";
+  }
+
+  async function refreshStatus() {
+    try {
+      const res = await fetch(statusUrl);
+      if (!res.ok) return;
+      const data = await res.json();
+      const badge = document.getElementById("status-badge");
+      badge.className = "badge fs-6 " + (badgeClasses[data.status] || "text-bg-danger");
+      badge.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+      document.getElementById("ahead-text").textContent = aheadMessage(data);
+    } catch (err) {
+      console.warn("Could not refresh status", err);
+    }
+  }
+  setInterval(refreshStatus, 10000);
+</script>
+{% endblock %}
