@@ -33,6 +33,7 @@ Open http://127.0.0.1:5000.
 ## Documents
 
 - Personas: [docs/week3/personas.md](docs/week3/personas.md)
+- Requirements: [docs/requirements.md](docs/requirements.md)
 
 ## Other work in this repo
 
