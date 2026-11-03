@@ -1,3 +1,14 @@
+import os
+
+from dotenv import load_dotenv
+from flask_migrate import Migrate
+from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
+
+from models import Barber, Service, Ticket, User, db
+
+load_dotenv()
+
 """TrimLine: a walk-in queue for a barbershop.
 
 Run it with:
