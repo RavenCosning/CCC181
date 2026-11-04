@@ -64,6 +64,9 @@
             <form method="post" action="{{ url_for('staff_action', ticket_id=t.id, action='no-show') }}">
               <button class="btn btn-sm btn-outline-danger w-100 text-nowrap" aria-label="Mark ticket {{ t.id }} as no-show">No-show</button>
             </form>
+            <form method="post" action="{{ url_for('delete_ticket', ticket_id=t.id) }}" data-confirm="Delete ticket {{ t.id }}? This cannot be undone.">
+              <button class="btn btn-sm btn-outline-secondary w-100" aria-label="Delete ticket {{ t.id }}">Delete</button>
+            </form>
           </div>
         </td>
       </tr>

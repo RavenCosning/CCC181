@@ -33,7 +33,6 @@ def all_services():
 
 
 def people_ahead(t):
-    """Count tickets still waiting for the same service that joined before t."""
     stmt = (db.select(func.count())
             .select_from(Ticket)
             .where(Ticket.service_id == t.service_id,
@@ -107,7 +106,7 @@ def ticket_status(ticket_id):
 def leave(ticket_id):
     t = db.get_or_404(Ticket, ticket_id)
     if t.status == "waiting":
-        t.status = "left"  # soft delete: row stays for reports
+        t.status = "left"
         db.session.commit()
     flash("You left the queue.", "info")
     return redirect(url_for("index"))
@@ -157,6 +156,15 @@ def staff_action(ticket_id, action):
         t.called_at = func.now()
     db.session.commit()
     flash(f"Ticket #{ticket_id} marked {new_status}.", "info")
+    return redirect(url_for("staff_dashboard"))
+
+
+@app.post("/staff/tickets/<int:ticket_id>/delete")
+def delete_ticket(ticket_id):
+    t = db.get_or_404(Ticket, ticket_id)
+    db.session.delete(t)
+    db.session.commit()
+    flash(f"Ticket #{ticket_id} was deleted.", "warning")
     return redirect(url_for("staff_dashboard"))
 
 
