@@ -30,6 +30,16 @@ def all_services():
     return db.session.scalars(db.select(Service).order_by(Service.name)).all()
 
 
+def people_ahead(t):
+    """Count tickets still waiting for the same service that joined before t."""
+    stmt = (db.select(func.count())
+            .select_from(Ticket)
+            .where(Ticket.service_id == t.service_id,
+                   Ticket.status == "waiting",
+                   Ticket.created_at < t.created_at))
+    return db.session.scalar(stmt)
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -80,22 +90,33 @@ def join():
 
 @app.get("/queue/<int:ticket_id>")
 def ticket(ticket_id):
-    abort(501)  # rewritten in Part 8
+    t = db.get_or_404(Ticket, ticket_id)
+    return render_template("ticket.html", ticket=t, service=t.service,
+                           ahead=people_ahead(t))
+
+
+@app.get("/queue/<int:ticket_id>/status.json")
+def ticket_status(ticket_id):
+    t = db.get_or_404(Ticket, ticket_id)
+    return {"status": t.status, "ahead": people_ahead(t)}
+
+
+@app.get("/staff")
+def staff_dashboard():
+    service_id = request.args.get("service_id", type=int)
+    stmt = (db.select(Ticket)
+            .where(Ticket.status.in_(["waiting", "called"]))
+            .order_by(Ticket.created_at))
+    if service_id:
+        stmt = stmt.where(Ticket.service_id == service_id)
+    queue = db.session.scalars(stmt).all()
+    return render_template("staff.html", queue=queue, services=all_services(),
+                           selected=service_id)
 
 
 @app.post("/queue/<int:ticket_id>/leave")
 def leave(ticket_id):
     abort(501)  # rewritten in Part 9
-
-
-@app.get("/queue/<int:ticket_id>/status.json")
-def ticket_status(ticket_id):
-    abort(501)  # rewritten in Part 8
-
-
-@app.get("/staff")
-def staff_dashboard():
-    abort(501)  # rewritten in Part 8
 
 
 @app.post("/staff/call-next")
