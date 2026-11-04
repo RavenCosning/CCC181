@@ -1,6 +1,7 @@
 import os
 
 from dotenv import load_dotenv
+from flask import Flask, abort, flash, redirect, render_template, request, url_for
 from flask_migrate import Migrate
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
@@ -14,10 +15,9 @@ load_dotenv()
 Run it with:
     flask --app app run --debug
 """
-from flask import Flask, abort, flash, redirect, render_template, request, url_for
 
 app = Flask(__name__)
-app.secret_key = "dev-only-change-me"  
+app.secret_key = "dev-only-change-me"
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["DATABASE_URL"]
 app.config["SQLALCHEMY_ECHO"] = os.environ.get("SQLALCHEMY_ECHO") == "1"
@@ -25,28 +25,9 @@ app.config["SQLALCHEMY_ECHO"] = os.environ.get("SQLALCHEMY_ECHO") == "1"
 db.init_app(app)
 migrate = Migrate(app, db)
 
-SERVICES = [
-    {"id": 1, "name": "Haircut"},
-    {"id": 2, "name": "Shave"},
-    {"id": 3, "name": "Haircut + shave"},
-]
 
-
-TICKETS = [
-    {"number": 1, "name": "Ana", "email": "ana@example.com", "service_id": 1, "status": "waiting"},
-    {"number": 2, "name": "Ben", "email": "ben@example.com", "service_id": 2, "status": "waiting"},
-]
-
-
-def find_ticket(ticket_id):
-    return next((t for t in TICKETS if t["number"] == ticket_id), None)
-
-
-def people_ahead(t):
-    return sum(1 for x in TICKETS
-               if x["service_id"] == t["service_id"]
-               and x["status"] == "waiting"
-               and x["number"] < t["number"])
+def all_services():
+    return db.session.scalars(db.select(Service).order_by(Service.name)).all()
 
 
 @app.route("/")
@@ -56,7 +37,7 @@ def index():
 
 @app.get("/join")
 def join_form():
-    return render_template("join.html", services=SERVICES, form={}, errors={})
+    return render_template("join.html", services=all_services(), form={}, errors={})
 
 
 @app.post("/join")
@@ -65,91 +46,67 @@ def join():
     name = form.get("name", "").strip()
     email = form.get("email", "").strip().lower()
     service_id = form.get("service_id", type=int)
+    service = db.session.get(Service, service_id) if service_id else None
 
     errors = {}
-    if not name:
-        errors["name"] = "Enter your name."
-    if "@" not in email:
+    if not name or len(name) > 80:
+        errors["name"] = "Enter your name (up to 80 characters)."
+    if "@" not in email or len(email) > 120:
         errors["email"] = "Enter a valid email address."
-    if service_id not in [s["id"] for s in SERVICES]:
+    if service is None or not service.active:
         errors["service_id"] = "Choose a service."
 
     if errors:
         flash("Please fix the highlighted fields.", "danger")
-        return render_template("join.html", services=SERVICES, form=form, errors=errors), 400
+        return render_template("join.html", services=all_services(),
+                               form=form, errors=errors), 400
 
-    number = TICKETS[-1]["number"] + 1 if TICKETS else 1
-    TICKETS.append({"number": number, "name": name, "email": email,
-                    "service_id": service_id, "status": "waiting"})
-    flash(f"You joined the queue. Your ticket is #{number}.", "success")
-    return redirect(url_for("ticket", ticket_id=number))
+    user = db.session.scalar(db.select(User).filter_by(email=email))
+    if user is None:
+        user = User(name=name, email=email)
+    ticket = Ticket(user=user, service=service)
+    db.session.add(ticket)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        flash("Something went wrong saving your ticket. Please try again.", "danger")
+        return render_template("join.html", services=all_services(),
+                               form=form, errors={}), 409
+
+    flash(f"You joined the queue. Your ticket is #{ticket.id}.", "success")
+    return redirect(url_for("ticket", ticket_id=ticket.id))
 
 
 @app.get("/queue/<int:ticket_id>")
 def ticket(ticket_id):
-    t = find_ticket(ticket_id)
-    if t is None:
-        abort(404)
-    service = next(s for s in SERVICES if s["id"] == t["service_id"])
-    return render_template("ticket.html", ticket=t, service=service, ahead=people_ahead(t))
+    abort(501)  # rewritten in Part 8
 
 
 @app.post("/queue/<int:ticket_id>/leave")
 def leave(ticket_id):
-    t = find_ticket(ticket_id)
-    if t is None:
-        abort(404)
-    t["status"] = "no-show"
-    flash("You left the queue.", "info")
-    return redirect(url_for("index"))
+    abort(501)  # rewritten in Part 9
 
 
 @app.get("/queue/<int:ticket_id>/status.json")
 def ticket_status(ticket_id):
-    t = find_ticket(ticket_id)
-    if t is None:
-        abort(404)
-    return {"status": t["status"], "ahead": people_ahead(t)}
+    abort(501)  # rewritten in Part 8
 
 
 @app.get("/staff")
 def staff_dashboard():
-    service_id = request.args.get("service_id", type=int)
-    queue = [t for t in TICKETS if t["status"] in ("waiting", "called")]
-    if service_id:
-        queue = [t for t in queue if t["service_id"] == service_id]
-    names = {s["id"]: s["name"] for s in SERVICES}
-    # Star feature: how many people are waiting per service
-    waiting_counts = {s["id"]: sum(1 for t in TICKETS
-                                   if t["service_id"] == s["id"] and t["status"] == "waiting")
-                      for s in SERVICES}
-    return render_template("staff.html", queue=queue, services=SERVICES, names=names,
-                           selected=service_id, waiting_counts=waiting_counts)
+    abort(501)  # rewritten in Part 8
 
 
 @app.post("/staff/call-next")
 def call_next():
-    service_id = request.form.get("service_id", type=int)
-    waiting = [t for t in TICKETS if t["status"] == "waiting"
-               and (not service_id or t["service_id"] == service_id)]
-    if not waiting:
-        flash("Nobody is waiting.", "warning")
-    else:
-        nxt = min(waiting, key=lambda t: t["number"])
-        nxt["status"] = "called"
-        flash(f"Ticket #{nxt['number']} ({nxt['name']}) called.", "info")
-    return redirect(url_for("staff_dashboard", service_id=service_id))
+    abort(501)  # rewritten in Part 9
 
 
 @app.post("/staff/tickets/<int:ticket_id>/<action>")
 def staff_action(ticket_id, action):
-    new_status = {"call": "called", "serve": "served", "no-show": "no-show"}.get(action)
-    t = find_ticket(ticket_id)
-    if t is None or new_status is None:
-        abort(404)
-    t["status"] = new_status
-    flash(f"Ticket #{ticket_id} marked {new_status}.", "info")
-    return redirect(url_for("staff_dashboard"))
+    abort(501)  # rewritten in Part 9
+
 
 @app.cli.command("seed")
 def seed():
@@ -162,7 +119,6 @@ def seed():
     db.session.commit()
     print("Services are ready.")
 
+
 if __name__ == "__main__":
     app.run(debug=True)
-
-    
