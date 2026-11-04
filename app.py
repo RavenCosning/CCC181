@@ -167,6 +167,60 @@ def delete_ticket(ticket_id):
     flash(f"Ticket #{ticket_id} was deleted.", "warning")
     return redirect(url_for("staff_dashboard"))
 
+@app.get("/staff/services")
+def services_list():
+    services = all_services()
+    return render_template("services.html", services=services)
+
+
+@app.post("/staff/services")
+def service_create():
+    name = request.form.get("name", "").strip()
+    minutes = request.form.get("avg_minutes", type=int)
+    if not name or len(name) > 60 or not minutes or minutes <= 0:
+        flash("Enter a name (up to 60 characters) and minutes greater than 0.", "danger")
+        return redirect(url_for("services_list"))
+    db.session.add(Service(name=name, avg_minutes=minutes))
+    try:
+        db.session.commit()
+        flash(f"Service \u201c{name}\u201d added.", "success")
+    except IntegrityError:
+        db.session.rollback()
+        flash(f"A service named \u201c{name}\u201d already exists.", "danger")
+    return redirect(url_for("services_list"))
+
+
+@app.post("/staff/services/<int:service_id>")
+def service_edit(service_id):
+    s = db.get_or_404(Service, service_id)
+    name = request.form.get("name", "").strip()
+    minutes = request.form.get("avg_minutes", type=int)
+    if not name or len(name) > 60 or not minutes or minutes <= 0:
+        flash("Enter a name (up to 60 characters) and minutes greater than 0.", "danger")
+        return redirect(url_for("services_list"))
+    s.name = name
+    s.avg_minutes = minutes
+    s.active = request.form.get("active") == "on"
+    try:
+        db.session.commit()
+        flash(f"Service \u201c{name}\u201d updated.", "success")
+    except IntegrityError:
+        db.session.rollback()
+        flash(f"A service named \u201c{name}\u201d already exists.", "danger")
+    return redirect(url_for("services_list"))
+
+
+@app.post("/staff/services/<int:service_id>/delete")
+def service_delete(service_id):
+    s = db.get_or_404(Service, service_id)
+    if s.tickets:
+        flash(f"\u201c{s.name}\u201d has tickets, so it cannot be deleted. Turn it off instead.", "danger")
+        return redirect(url_for("services_list"))
+    db.session.delete(s)
+    db.session.commit()
+    flash(f"Service \u201c{s.name}\u201d deleted.", "warning")
+    return redirect(url_for("services_list"))
+
 
 @app.cli.command("seed")
 def seed():
