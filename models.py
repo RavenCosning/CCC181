@@ -42,6 +42,7 @@ class Barber(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(80))
+    active: Mapped[bool] = mapped_column(default=True, server_default="true")
 
     tickets: Mapped[list["Ticket"]] = relationship(back_populates="barber")
 
