@@ -25,6 +25,8 @@ app.config["SQLALCHEMY_ECHO"] = os.environ.get("SQLALCHEMY_ECHO") == "1"
 db.init_app(app)
 migrate = Migrate(app, db)
 
+STAFF_ACTIONS = {"call": "called", "serve": "served", "no-show": "no-show"}
+
 
 def all_services():
     return db.session.scalars(db.select(Service).order_by(Service.name)).all()
@@ -101,6 +103,16 @@ def ticket_status(ticket_id):
     return {"status": t.status, "ahead": people_ahead(t)}
 
 
+@app.post("/queue/<int:ticket_id>/leave")
+def leave(ticket_id):
+    t = db.get_or_404(Ticket, ticket_id)
+    if t.status == "waiting":
+        t.status = "left"  # soft delete: row stays for reports
+        db.session.commit()
+    flash("You left the queue.", "info")
+    return redirect(url_for("index"))
+
+
 @app.get("/staff")
 def staff_dashboard():
     service_id = request.args.get("service_id", type=int)
@@ -114,19 +126,38 @@ def staff_dashboard():
                            selected=service_id)
 
 
-@app.post("/queue/<int:ticket_id>/leave")
-def leave(ticket_id):
-    abort(501)  # rewritten in Part 9
-
-
 @app.post("/staff/call-next")
 def call_next():
-    abort(501)  # rewritten in Part 9
+    service_id = request.form.get("service_id", type=int)
+    stmt = (db.select(Ticket)
+            .where(Ticket.status == "waiting")
+            .order_by(Ticket.created_at)
+            .limit(1))
+    if service_id:
+        stmt = stmt.where(Ticket.service_id == service_id)
+    nxt = db.session.scalar(stmt)
+    if nxt is None:
+        flash("Nobody is waiting.", "warning")
+    else:
+        nxt.status = "called"
+        nxt.called_at = func.now()
+        db.session.commit()
+        flash(f"Ticket #{nxt.id} ({nxt.user.name}) called.", "info")
+    return redirect(url_for("staff_dashboard", service_id=service_id))
 
 
 @app.post("/staff/tickets/<int:ticket_id>/<action>")
 def staff_action(ticket_id, action):
-    abort(501)  # rewritten in Part 9
+    new_status = STAFF_ACTIONS.get(action)
+    if new_status is None:
+        abort(404)
+    t = db.get_or_404(Ticket, ticket_id)
+    t.status = new_status
+    if new_status == "called":
+        t.called_at = func.now()
+    db.session.commit()
+    flash(f"Ticket #{ticket_id} marked {new_status}.", "info")
+    return redirect(url_for("staff_dashboard"))
 
 
 @app.cli.command("seed")
