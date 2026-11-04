@@ -32,6 +32,11 @@ def all_services():
     return db.session.scalars(db.select(Service).order_by(Service.name)).all()
 
 
+def active_services():
+    stmt = db.select(Service).filter_by(active=True).order_by(Service.name)
+    return db.session.scalars(stmt).all()
+
+
 def people_ahead(t):
     stmt = (db.select(func.count())
             .select_from(Ticket)
@@ -48,7 +53,7 @@ def index():
 
 @app.get("/join")
 def join_form():
-    return render_template("join.html", services=all_services(), form={}, errors={})
+    return render_template("join.html", services=active_services(), form={}, errors={})
 
 
 @app.post("/join")
@@ -69,7 +74,7 @@ def join():
 
     if errors:
         flash("Please fix the highlighted fields.", "danger")
-        return render_template("join.html", services=all_services(),
+        return render_template("join.html", services=active_services(),
                                form=form, errors=errors), 400
 
     user = db.session.scalar(db.select(User).filter_by(email=email))
@@ -82,7 +87,7 @@ def join():
     except IntegrityError:
         db.session.rollback()
         flash("Something went wrong saving your ticket. Please try again.", "danger")
-        return render_template("join.html", services=all_services(),
+        return render_template("join.html", services=active_services(),
                                form=form, errors={}), 409
 
     flash(f"You joined the queue. Your ticket is #{ticket.id}.", "success")
@@ -166,6 +171,7 @@ def delete_ticket(ticket_id):
     db.session.commit()
     flash(f"Ticket #{ticket_id} was deleted.", "warning")
     return redirect(url_for("staff_dashboard"))
+
 
 @app.get("/staff/services")
 def services_list():
