@@ -9,8 +9,7 @@
 - **Section:** CS3B
 - **Date:** November 4, 2026
 - **Database:** PostgreSQL 17 in Docker (no local PostgreSQL fallback used)
-- **Pull request:** https://github.com/RavenCosning/CCC181/pull/PR_NUMBER_HERE
-
+- **Pull request:** https://github.com/RavenCosning/CCC181/pull/2
 ## 2. Requirements
 
 Full list: [requirements.md](../requirements.md).
