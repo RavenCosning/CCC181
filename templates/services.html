@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Manage services · TrimLine{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Manage services</h1>
+
+<div class="table-responsive mb-4">
+  <table class="table align-middle">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Avg minutes</th>
+        <th>Active</th>
+        <th>Tickets</th>
+        <th>Save</th>
+        <th>Delete</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in services %}
+      <tr>
+        <form method="post" action="{{ url_for('service_edit', service_id=s.id) }}">
+          <td><input type="text" name="name" value="{{ s.name }}" maxlength="60" class="form-control form-control-sm" required></td>
+          <td><input type="number" name="avg_minutes" value="{{ s.avg_minutes }}" min="1" class="form-control form-control-sm" style="width:5rem" required></td>
+          <td><input type="checkbox" name="active" class="form-check-input" {% if s.active %}checked{% endif %}></td>
+          <td>{{ s.tickets|length }}</td>
+          <td><button type="submit" class="btn btn-sm btn-primary">Save</button></td>
+        </form>
+        <td>
+          <form method="post" action="{{ url_for('service_delete', service_id=s.id) }}" data-confirm="Delete service “{{ s.name }}”?">
+            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h2 class="h5 mb-3">Add a service</h2>
+<form method="post" action="{{ url_for('service_create') }}" class="row g-2 align-items-end">
+  <div class="col-6 col-md-4">
+    <label for="new-name" class="form-label">Name</label>
+    <input type="text" id="new-name" name="name" maxlength="60" class="form-control" required>
+  </div>
+  <div class="col-4 col-md-3">
+    <label for="new-minutes" class="form-label">Avg minutes</label>
+    <input type="number" id="new-minutes" name="avg_minutes" min="1" class="form-control" required>
+  </div>
+  <div class="col-2 col-md-2">
+    <button type="submit" class="btn btn-primary w-100">Add</button>
+  </div>
+</form>
+{% endblock %}
